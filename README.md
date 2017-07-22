@@ -12,4 +12,12 @@ Extremley useful log function for javascript code
  
 # examples
 
+```
 const log = require('log').log('[Gpio]');
+function hello() {
+  const world = function() {
+    log();
+    log('got here');
+  }
+}
+```
