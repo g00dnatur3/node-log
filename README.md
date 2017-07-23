@@ -20,6 +20,7 @@ logs two extra things:
 # examples
 The following code:
 ```
+// the filename this log is contained in is: Gpio.js
 const log = require('log').log('[Gpio]');
 
 function hello() {
