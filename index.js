@@ -44,6 +44,12 @@ module.exports = {
 				: console.log(logTag + ' ' + caller + ' - ' + str);
 			
 		}
+	},
+
+	getCallerFunctionName: function getCallerFunctionName(_arguments) {
+		return (_arguments.callee.caller.name) 
+			? _arguments.callee.caller.name.trim()
+			: getFunctionName(_arguments.callee.caller);
 	}
 
 }
