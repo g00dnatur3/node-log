@@ -17,7 +17,7 @@ logs two extra things:
 }
 ```
  
-# examples
+# example 1
 The following code:
 ```
 // the filename this log is contained in is: Gpio.js
@@ -25,9 +25,15 @@ const log = require('log').log('[Gpio]');
 
 function hello() {
   log('got here');
+  
+  
+  //can also work:
+  //const world = function world {
+  
   function world() {
     log('got here');
   }
+  
   world();
 }
 
@@ -38,3 +44,28 @@ Prints this to the console this:
 [Gpio] hello - got here
 [Gpio] world - got here
 ```
+
+# example 2
+The following code:
+```
+// the filename this log is contained in is: Gpio.js
+const log = require('log').log('[Gpio]');
+
+function hello() {
+  log('got here');
+  function world() {
+    log('got here', world);
+  }
+  setTimeout(world, 1000);
+}
+
+hello();
+```
+Prints this to the console this:
+```
+[Gpio] hello - got here
+[Gpio] world - got here
+```
+
+
+
