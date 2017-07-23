@@ -20,7 +20,7 @@ logs two extra things:
 # example 1
 The following code:
 ```
-// the filename this log is contained in is: Gpio.js
+// the filename this code is contained in is: Gpio.js
 const log = require('node-log').log('[Gpio]');
 
 function hello() {
@@ -47,7 +47,7 @@ Prints this to the console this:
 # example 2
 The following code:
 ```
-// the filename this log is contained in is: Gpio.js
+// the filename this code is contained in is: Gpio.js
 const log = require('node-log').log('[Gpio]');
 
 function hello() {
