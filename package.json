@@ -1,0 +1,22 @@
+{
+  "name": "node-log",
+  "version": "0.0.1",
+  "description": "a log function",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/g00dnatur3/node-log.git"
+  },
+  "keywords": [
+    "node-log"
+  ],
+  "author": "g00dnatur3",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/g00dnatur3/node-log/issues"
+  },
+  "homepage": "https://github.com/g00dnatur3/node-log#readme"
+}
