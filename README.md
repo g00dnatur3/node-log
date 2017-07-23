@@ -26,9 +26,8 @@ const log = require('log').log('[Gpio]');
 function hello() {
   log('got here');
   
-  
-  //can also work:
-  //const world = function world {
+  //alternative syntax:
+  //const world = function world() {...
   
   function world() {
     log('got here');
@@ -53,10 +52,9 @@ const log = require('log').log('[Gpio]');
 
 function hello() {
   log('got here');
-  function world() {
-    log('got here', world);
-  }
-  setTimeout(world, 1000);
+  setImmediate(function world() {
+    log('got here');
+  });
 }
 
 hello();
