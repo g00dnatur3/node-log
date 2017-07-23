@@ -25,7 +25,7 @@ const log = require('log').log('[Gpio]');
 
 function hello() {
   log('got here');
-  const world = function() {
+  function world() {
     log('got here');
   }
   world();
