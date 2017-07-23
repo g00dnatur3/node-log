@@ -3,7 +3,7 @@ Extremley useful log function for javascript code
 
 # console.log vs node-log
 
-We two extra things:
+logs two extra things:
 
 1) A log tag (I usually make my log tag be '[filename]'
 2) Calling function - name of function that is calling the code where the log is happening
