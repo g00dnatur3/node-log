@@ -28,7 +28,10 @@ function hello() {
   const world = function() {
     log('got here');
   }
+  world();
 }
+
+hello();
 ```
 Prints this to the console this:
 ```
