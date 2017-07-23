@@ -13,7 +13,7 @@ logs two extra things:
 ```
  "dependencies": {
     ...,
-    "log": "https://github.com/g00dnatur3/node-log.git",
+    "node-log": "https://github.com/g00dnatur3/node-log.git",
 }
 ```
  
