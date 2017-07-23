@@ -21,7 +21,7 @@ logs two extra things:
 The following code:
 ```
 // the filename this log is contained in is: Gpio.js
-const log = require('log').log('[Gpio]');
+const log = require('node-log').log('[Gpio]');
 
 function hello() {
   log('got here');
