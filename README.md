@@ -26,8 +26,8 @@ const log = require('log').log('[Gpio]');
 function hello() {
   log('got here');
   
-  //alternative syntax:
-  //const world = function world() {...
+  // alternative syntax:
+  // const world = function world() {...
   
   function world() {
     log('got here');
