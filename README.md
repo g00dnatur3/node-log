@@ -57,7 +57,7 @@ function hello() {
   });
 }
 
-hello();
+setImmediate(hello);
 ```
 Prints this to the console this:
 ```
