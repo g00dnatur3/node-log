@@ -41,7 +41,7 @@ module.exports = {
 			}
 			(str.length === 0)
 				? console.log(logTag + ' ' + caller)
-				: console.log(logTag + ' ' + caller + ' - ' + str);
+				: console.log(logTag + ' ' + caller + ' - ' + str.trim());
 			
 		}
 	},
