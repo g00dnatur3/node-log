@@ -24,25 +24,28 @@ module.exports = {
 
 	log: function log(logTag) {
 		return function(str, caller) {
-
-			if (!str) str = '';
-			if (!caller && !arguments.callee.caller) {
-				console.log(logTag + ' - ' + str);
-				return;
+			try {
+				if (!str) str = '';
+				if (!caller && !arguments.callee.caller) {
+					console.log(logTag + ' - ' + str);
+					return;
+				}
+				if (!caller && arguments.callee.caller.name) {
+					caller = arguments.callee.caller.name.trim();
+				} else if (!caller) {
+					caller = getFunctionName(arguments.callee.caller);
+				} else if (caller && Object.getType(caller) === 'function') {
+					caller = getFunctionName(caller);
+				}
+				(str.length === 0)
+					? console.log(logTag + ' ' + caller)
+					: (caller.length === 0)
+					? console.log(logTag + ' - ' + str)
+					: console.log(logTag + ' ' + caller + ' - ' + str);
 			}
-			if (!caller && arguments.callee.caller.name) {
-				caller = arguments.callee.caller.name.trim();
-			} else if (!caller) {
-				caller = getFunctionName(arguments.callee.caller);
+			catch (err) {
+				console.log(err.stack);
 			}
-
-			if (Object.getType(caller) === 'function') {
-				caller = getFunctionName(caller);
-			}
-			(str.length === 0)
-				? console.log(logTag + ' ' + caller)
-				: console.log(logTag + ' ' + caller + ' - ' + str.trim());
-			
 		}
 	},
 
@@ -53,4 +56,3 @@ module.exports = {
 	}
 
 }
-
