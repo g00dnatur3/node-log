@@ -13,15 +13,15 @@ logs two extra things:
 ```
  "dependencies": {
     ...,
-    "log": "https://github.com/g00dnatur3/node-log.git",
+    "node-log": "https://github.com/g00dnatur3/node-log.git",
 }
 ```
  
 # example 1
 The following code:
 ```
-// the filename this log is contained in is: Gpio.js
-const log = require('log').log('[Gpio]');
+// the filename this code is contained in is: Gpio.js
+const log = require('node-log').log('[Gpio]');
 
 function hello() {
   log('got here');
@@ -47,8 +47,8 @@ Prints this to the console this:
 # example 2
 The following code:
 ```
-// the filename this log is contained in is: Gpio.js
-const log = require('log').log('[Gpio]');
+// the filename this code is contained in is: Gpio.js
+const log = require('node-log').log('[Gpio]');
 
 function hello() {
   log('got here');
