@@ -49,7 +49,13 @@ module.exports = {
 					var _caller = arguments.callee.caller;
 					while (_caller) {
 						name = getFunctionName(_caller);
-						if (name) callChain.unshift(name);
+						if (name) {
+							if (callChain.length > 0) {
+								//avoid duplicate function names created with .bind()
+								if (callChain[0] !== name) callChain.unshift(name); 
+							}
+							else callChain.unshift(name);
+						}
 						_caller = _caller.caller;
 					}
 				}				
