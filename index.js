@@ -13,11 +13,24 @@ if (!Object.getType) {
 	}(this));
 }
 
-const getFunctionName = function getFunctionName(fun) {
+function getFunctionName(fun) {
+	if (fun.name && fun.name.length > 0) return fun.name.trim();
 	var ret = fun.toString();
 	ret = ret.substr('function '.length);
-	ret = ret.substr(0, ret.indexOf('('));
-	return ret.trim();
+	ret = ret.substr(0, ret.indexOf('(')).trim();
+	return ret.length === 0 ? null : ret;
+}
+
+
+function getCallerFunctionName(_arguments) {
+	return (_arguments.callee.caller.name) 
+		? _arguments.callee.caller.name.trim()
+		: getFunctionName(_arguments.callee.caller);
+}
+
+function _log(tag, callChain, str) {
+	if (callChain.length > 0) console.log(tag + ' ' + callChain.join(' - ') + ' - ' + str);
+	else console.log(tag + ' - ' + str);
 }
 
 module.exports = {
@@ -25,23 +38,29 @@ module.exports = {
 	log: function log(logTag) {
 		return function(str, caller) {
 			try {
-				if (!str) str = '';
+				str = (str) ? str.trim() : '';
 				if (!caller && !arguments.callee.caller) {
 					console.log(logTag + ' - ' + str);
 					return;
 				}
-				if (!caller && arguments.callee.caller.name) {
-					caller = arguments.callee.caller.name.trim();
-				} else if (!caller) {
-					caller = getFunctionName(arguments.callee.caller);
-				} else if (caller && Object.getType(caller) === 'function') {
-					caller = getFunctionName(caller);
+				const callChain = [];
+				if (Object.getType(arguments.callee.caller) === 'function') {
+					var _caller = arguments.callee.caller;
+					while (_caller) {
+						const name = getFunctionName(_caller);
+						if (name) callChain.unshift(name);
+						_caller = _caller.caller;
+					}
 				}
-				(str.length === 0)
-					? console.log(logTag + ' ' + caller)
-					: (caller.length === 0)
-					? console.log(logTag + ' - ' + str)
-					: console.log(logTag + ' ' + caller + ' - ' + str);
+				const callerType = Object.getType(caller);
+				if (callerType === 'function') {
+					const name = getFunctionName(caller);
+					if (name) callChain.unshift(name);
+				}
+				else if (callerType === 'string') {
+					callChain.unshift(caller);
+				}
+				_log(logTag, callChain, str);
 			}
 			catch (err) {
 				console.log(err.stack);
@@ -49,10 +68,8 @@ module.exports = {
 		}
 	},
 
-	getCallerFunctionName: function getCallerFunctionName(_arguments) {
-		return (_arguments.callee.caller.name) 
-			? _arguments.callee.caller.name.trim()
-			: getFunctionName(_arguments.callee.caller);
-	}
+	getCallerFunctionName: getCallerFunctionName,
+	
+	getFunctionName: getFunctionName
 
 }
