@@ -61,10 +61,10 @@ module.exports = {
 				const callerType = Object.getType(caller);
 				if (callerType === 'function') {
 					name = getFunctionName(caller);
-					if (name) callChain.unshift(name);
+					if (name) callChain.push(name);
 				}
 				else if (callerType === 'string') {
-					callChain.unshift(caller);
+					callChain.push(caller);
 				}
 				_log(logTag, callChain, str);
 			}
