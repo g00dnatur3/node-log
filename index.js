@@ -43,18 +43,19 @@ module.exports = {
 					console.log(logTag + ' - ' + str);
 					return;
 				}
+				var name;
 				const callChain = [];
 				if (Object.getType(arguments.callee.caller) === 'function') {
 					var _caller = arguments.callee.caller;
 					while (_caller) {
-						const name = getFunctionName(_caller);
+						name = getFunctionName(_caller);
 						if (name) callChain.unshift(name);
 						_caller = _caller.caller;
 					}
 				}
 				const callerType = Object.getType(caller);
 				if (callerType === 'function') {
-					const name = getFunctionName(caller);
+					name = getFunctionName(caller);
 					if (name) callChain.unshift(name);
 				}
 				else if (callerType === 'string') {
