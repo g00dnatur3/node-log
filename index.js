@@ -52,11 +52,7 @@ module.exports = {
 						if (name) callChain.unshift(name);
 						_caller = _caller.caller;
 					}
-				}
-				
-				// limit the depth to the previous two functions called
-				while (callChain.length > 2) callChain.shift();
-				
+				}				
 				// caller is special adhoc allowing user to log extra function or tag
 				const callerType = Object.getType(caller);
 				if (callerType === 'function') {
@@ -66,6 +62,8 @@ module.exports = {
 				else if (callerType === 'string') {
 					callChain.push(caller);
 				}
+				// limit depth of the call chain
+				while (callChain.length > 2) callChain.shift();
 				_log(logTag, callChain, str);
 			}
 			catch (err) {
