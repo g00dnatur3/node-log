@@ -2,6 +2,9 @@
   "name": "node-log",
   "version": "0.0.1",
   "description": "a log function",
+  "dependencies": {
+    "function-extractor": "*"
+  },
   "main": "index.js",
   "scripts": {
     "test": "node test.js"
