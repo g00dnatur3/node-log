@@ -1,3 +1,8 @@
+const assert = require('assert');
+const fs = require("fs");
+const functionExtractor = require("function-extractor");
+const path = require('path');
+
 if (!Object.getType) {
 	Object.getType = (function(global) {
 		const cache = {};
@@ -13,6 +18,23 @@ if (!Object.getType) {
 	}(this));
 }
 
+function getCallerFile() {
+    var originalFunc = Error.prepareStackTrace;
+    var callerfile;
+    try {
+        var err = new Error();
+        var currentfile;
+        Error.prepareStackTrace = function (err, stack) { return stack; };
+        currentfile = err.stack.shift().getFileName();
+        while (err.stack.length) {
+            callerfile = err.stack.shift().getFileName();
+            if(currentfile !== callerfile) break;
+        }
+    } catch (e) {}
+    Error.prepareStackTrace = originalFunc;
+    return callerfile;
+}
+
 function getFunctionName(fun) {
 	if (fun.name && fun.name.length > 0) return fun.name.trim();
 	var ret = fun.toString();
@@ -20,7 +42,6 @@ function getFunctionName(fun) {
 	ret = ret.substr(0, ret.indexOf('(')).trim();
 	return ret.length === 0 ? null : ret;
 }
-
 
 function getCallerFunctionName(_arguments) {
 	return (_arguments.callee.caller.name) 
@@ -33,10 +54,53 @@ function _log(tag, callChain, str) {
 	else console.log(tag + ' - ' + str);
 }
 
+const funcMap = {};
+
+function addFunctions(tag, callerFile) {
+	const data = fs.readFileSync(callerFile, "utf8")
+	const funcs = functionExtractor.parse(data);
+	for (var i=0; i<funcs.length; i++) {
+		const func = funcs[i];
+		//console.log('func.name: ' + func.name + ', tag: ' + tag);
+		funcMap[func.name] = tag;
+	}
+}
+
+function formalName(funcName, logTag) {
+	var tag = funcMap[funcName];
+	if (!tag) return funcName;
+	tag = tag.replace('[', '').replace(']', '');
+	logTag = logTag.replace('[', '').replace(']', '');
+	//console.log();
+	//console.log('funcName: ' + funcName);
+	//console.log('logTag: ' + logTag);
+	//console.log('tag: ' + tag);
+	//console.log();
+	if (tag === funcName) return funcName;
+	if (tag === logTag) return funcName;
+	else return tag + '.' + funcName;
+}
+
+function createLogTag(callerFile) {
+	const tag = '[' + path.basename(callerFile).replace('.js', '') + ']';
+	try {
+		addFunctions(tag, callerFile);
+	} catch (err) {
+		console.log('[node-log] - createLogTag - warn: failed read functions from file: ' + callerFile);
+	}
+	return tag;
+}
+
 module.exports = {
 
-	log: function log(logTag) {
+	log: function log() {
+		var logTag;
 		return function(str, caller) {
+			if (!logTag) {
+				const callerFile = getCallerFile();
+				assert(callerFile, "callerFile is null");
+				logTag = createLogTag(callerFile);
+			}
 			try {
 				str = (str) ? str.trim() : '';
 				if (!caller && !arguments.callee.caller) {
@@ -49,12 +113,13 @@ module.exports = {
 					var _caller = arguments.callee.caller;
 					while (_caller) {
 						name = getFunctionName(_caller);
+						const fname = formalName(name, logTag);
 						if (name) {
 							if (callChain.length > 0) {
-								//avoid duplicate function names created with .bind()
-								if (callChain[0] !== name) callChain.unshift(name); 
+								// avoid duplicate function names created with .bind()
+								if (callChain[0] !== name) callChain.unshift(fname); 
 							}
-							else callChain.unshift(name);
+							else callChain.unshift(fname);
 						}
 						_caller = _caller.caller;
 					}
