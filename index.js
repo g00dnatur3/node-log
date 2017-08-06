@@ -49,15 +49,14 @@ function getCallerFunctionName(_arguments) {
 		: getFunctionName(_arguments.callee.caller);
 }
 
-function _log(tag, callChain, str) {
-	if (callChain.length > 0) console.log(tag + ' ' + callChain.join(' - ') + ' - ' + str);
-	else console.log(tag + ' - ' + str);
-}
-
 const funcMap = {};
 
 function addFunctions(tag, callerFile) {
-	const data = fs.readFileSync(callerFile, "utf8")
+	var data = fs.readFileSync(callerFile, "utf8").trim();
+	if (data[0] === '#' && data[1] === '!') {
+		// remove bash header if exists...
+		data = data.substring(data.indexOf("\n") + 1).trim();
+	}
 	const funcs = functionExtractor.parse(data);
 	for (var i=0; i<funcs.length; i++) {
 		const func = funcs[i];
@@ -66,7 +65,7 @@ function addFunctions(tag, callerFile) {
 	}
 }
 
-function formalName(funcName, logTag) {
+function formalName(funcName, logTag, customTag) {
 	var tag = funcMap[funcName];
 	if (!tag) return funcName;
 	tag = tag.replace('[', '').replace(']', '');
@@ -78,7 +77,9 @@ function formalName(funcName, logTag) {
 	//console.log();
 	if (tag === funcName) return funcName;
 	if (tag === logTag) return funcName;
-	else return tag + '.' + funcName;
+	else {
+		return (customTag) ? customTag + '.' + funcName : tag + '.' + funcName;
+	}
 }
 
 function createLogTag(callerFile) {
@@ -91,16 +92,19 @@ function createLogTag(callerFile) {
 	return tag;
 }
 
+function _log(tag, callChain, str) {
+	if (callChain.length > 0) console.log(tag + ' ' + callChain.join(' - ') + ' - ' + str);
+	else console.log(tag + ' - ' + str);
+}
+
 module.exports = {
 
-	log: function log() {
-		var logTag;
+	log: function log(customTag) {
+		const callerFile = getCallerFile();
+		assert(callerFile, "callerFile is null");
+		const logTag = createLogTag(callerFile);
+		assert(logTag, "logTag is null");
 		return function(str, caller) {
-			if (!logTag) {
-				const callerFile = getCallerFile();
-				assert(callerFile, "callerFile is null");
-				logTag = createLogTag(callerFile);
-			}
 			try {
 				str = (str) ? str.trim() : '';
 				if (!caller && !arguments.callee.caller) {
@@ -135,7 +139,9 @@ module.exports = {
 				}
 				// limit depth of the call chain
 				while (callChain.length > 2) callChain.shift();
-				_log(logTag, callChain, str);
+				
+				if (customTag) _log(customTag, callChain, str);
+				else _log(logTag, callChain, str);
 			}
 			catch (err) {
 				console.log(err.stack);
