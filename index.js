@@ -58,22 +58,38 @@ function addFunctions(tag, callerFile) {
 		data = data.substring(data.indexOf("\n") + 1).trim();
 	}
 	
-	assert(!funcMap[callerFile], "instantiating log twice in same file");
+	assert(!funcMap[callerFile], 'instantiating log twice in same file: ' + callerFile);
 	funcMap[callerFile] = tag; // keep a mapping of callerFile to the tag
 	
+	// use a hash because constructor functions have same name as file usually
+	assert(!funcMap['#' + tag], 'more than one file has same log tag: ' + tag + ', ' + callerFile);
+	funcMap['#' + tag] = callerFile; // ensure tags are unique accross files
+	
 	const funcs = functionExtractor.parse(data);
+	
 	for (var i=0; i<funcs.length; i++) {
 		const func = funcs[i];
 		//console.log('func.name: ' + func.name + ', tag: ' + tag);
+		const val = {tag: tag, callerFile: callerFile};
 		if (!funcMap[func.name]) {
-			funcMap[func.name] = { tag: tag, callerFile: callerFile };
-		} else {		
-			const _tmp = funcMap[func.name];
-			if (callerFile !== _tmp.callerFile) {
-				assert(tag !== _tmp.tag, "two or more files with same log tag");
-				delete funcMap[func.name];
+			funcMap[func.name] = val;
+		} else {
+			if (Object.getType(funcMap[func.name]) !== 'array') {
+				const _tmp = funcMap[func.name];
+				funcMap[func.name] = [_tmp];
+			}
+			funcMap[func.name].push(val);
+		}
+	}
+	
+	for (var i=0; i<funcs.length; i++) {
+		const func = funcs[i];
+		if (Object.getType(funcMap[func.name]) === 'array') {
+			const vals = funcMap[func.name];
+			delete funcMap[func.name];
+			for (var j=0; j<vals.length; j++) {
+				const _tmp = vals[j];
 				funcMap[_tmp.tag + '.' + func.name] = _tmp;
-				funcMap[tag + '.' + func.name] = { tag: tag, callerFile: callerFile };
 			}
 		}
 	}
