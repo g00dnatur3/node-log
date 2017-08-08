@@ -57,16 +57,48 @@ function addFunctions(tag, callerFile) {
 		// remove bash header if exists...
 		data = data.substring(data.indexOf("\n") + 1).trim();
 	}
+	
+	assert(!funcMap[callerFile], "instantiating log twice in same file");
+	funcMap[callerFile] = tag; // keep a mapping of callerFile to the tag
+	
 	const funcs = functionExtractor.parse(data);
 	for (var i=0; i<funcs.length; i++) {
 		const func = funcs[i];
+
 		//console.log('func.name: ' + func.name + ', tag: ' + tag);
-		funcMap[func.name] = tag;
+		if (!funcMap[func.name]) {
+			funcMap[func.name] = { tag: tag, callerFile: callerFile };
+		} else {
+			const _tmp = { tag: tag, callerFile: callerFile };
+			if (callerFile !== _tmp.callerFile) {
+				assert(tag != _tmp.tag, "two or more files with same log tag");
+				delete funcMap[func.name];
+				funcMap[_tmp.tag + '.' + func.name] = _tmp;
+				funcMap[tag + '.' + func.name] = { tag: tag, callerFile: callerFile };
+			}
+		}
 	}
 }
 
+function getTag(funcName) {
+	// the way i am doing this is not the simple-est
+	// but its more of an optimization
+	// i dont have to call getCallerFile() if the func.name is unique.
+	if (!funcMap[funcName]) {
+		const callerFile = getCallerFile();		
+		if (funcMap[callerFile]) {
+			const _tag = funcMap[callerFile];
+			const key = funcMap[_tag + '.' + funcName]
+			return (funcMap[key]) ? funcMap[key].tag : null;
+		}
+		else return null;
+	} 
+	else return funcMap[funcName].tag;
+}
+
 function formalName(funcName, logTag) {
-	var tag = funcMap[funcName];
+	assert(funcName, 'funcName is null');
+	const tag = getTag(funcName);
 	if (!tag) return funcName;
 	
 	//console.log();
@@ -121,8 +153,8 @@ module.exports = {
 					var _caller = arguments.callee.caller;
 					while (_caller) {
 						name = getFunctionName(_caller);
-						const fname = formalName(name, logTag);
 						if (name) {
+							const fname = formalName(name, logTag);
 							if (callChain.length > 0) {
 								// avoid duplicate function names created with .bind()
 								if (callChain[0] !== name) callChain.unshift(fname); 
