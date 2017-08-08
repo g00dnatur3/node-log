@@ -65,25 +65,29 @@ function addFunctions(tag, callerFile) {
 	}
 }
 
-function formalName(funcName, logTag, customTag) {
+function formalName(funcName, logTag) {
 	var tag = funcMap[funcName];
 	if (!tag) return funcName;
-	tag = tag.replace('[', '').replace(']', '');
-	logTag = logTag.replace('[', '').replace(']', '');
+	
 	//console.log();
 	//console.log('funcName: ' + funcName);
 	//console.log('logTag: ' + logTag);
 	//console.log('tag: ' + tag);
 	//console.log();
+	
 	if (tag === funcName) return funcName;
 	if (tag === logTag) return funcName;
 	else {
-		return (customTag) ? customTag + '.' + funcName : tag + '.' + funcName;
+		return tag + '.' + funcName;
 	}
 }
 
-function createLogTag(callerFile) {
-	const tag = '[' + path.basename(callerFile).replace('.js', '') + ']';
+function createLogTag(callerFile, customTag) {
+	if (customTag) {
+		if (customTag.startsWith('[')) customTag = customTag.slice(1);
+		if (customTag.endsWith(']')) customTag = customTag.slice(0, customTag.length-1);
+	}
+	const tag = (customTag) ? customTag : path.basename(callerFile).replace('.js', '');
 	try {
 		addFunctions(tag, callerFile);
 	} catch (err) {
@@ -93,8 +97,8 @@ function createLogTag(callerFile) {
 }
 
 function _log(tag, callChain, str) {
-	if (callChain.length > 0) console.log(tag + ' ' + callChain.join(' - ') + ' - ' + str);
-	else console.log(tag + ' - ' + str);
+	if (callChain.length > 0) console.log('[' + tag + '] ' + callChain.join(' - ') + ' - ' + str);
+	else console.log('[' + tag + '] - ' + str);
 }
 
 module.exports = {
@@ -102,7 +106,7 @@ module.exports = {
 	log: function log(customTag) {
 		const callerFile = getCallerFile();
 		assert(callerFile, "callerFile is null");
-		const logTag = createLogTag(callerFile);
+		const logTag = createLogTag(callerFile, customTag);
 		assert(logTag, "logTag is null");
 		return function(str, caller) {
 			try {
@@ -140,8 +144,10 @@ module.exports = {
 				// limit depth of the call chain
 				while (callChain.length > 2) callChain.shift();
 				
-				if (customTag) _log(customTag, callChain, str);
-				else _log(logTag, callChain, str);
+				//if (customTag) _log(customTag, callChain, str);
+				//else _log(logTag, callChain, str);
+				
+				_log(logTag, callChain, str);
 			}
 			catch (err) {
 				console.log(err.stack);
