@@ -64,14 +64,13 @@ function addFunctions(tag, callerFile) {
 	const funcs = functionExtractor.parse(data);
 	for (var i=0; i<funcs.length; i++) {
 		const func = funcs[i];
-
 		//console.log('func.name: ' + func.name + ', tag: ' + tag);
 		if (!funcMap[func.name]) {
 			funcMap[func.name] = { tag: tag, callerFile: callerFile };
-		} else {
-			const _tmp = { tag: tag, callerFile: callerFile };
+		} else {		
+			const _tmp = funcMap[func.name];
 			if (callerFile !== _tmp.callerFile) {
-				assert(tag != _tmp.tag, "two or more files with same log tag");
+				assert(tag !== _tmp.tag, "two or more files with same log tag");
 				delete funcMap[func.name];
 				funcMap[_tmp.tag + '.' + func.name] = _tmp;
 				funcMap[tag + '.' + func.name] = { tag: tag, callerFile: callerFile };
