@@ -138,7 +138,7 @@ function createLogTag(callerFile, customTag) {
 	try {
 		addFunctions(tag, callerFile);
 	} catch (err) {
-		console.log('[node-log] - createLogTag - warn: failed read functions from file: ' + callerFile);
+		console.log('[node-log] - createLogTag - warn: failed to read functions from file: ' + callerFile);
 	}
 	return tag;
 }
@@ -176,7 +176,17 @@ module.exports = {
 							}
 							else callChain.unshift(fname);
 						}
-						_caller = _caller.caller;
+						
+						try {
+							_caller = _caller.caller;
+						} catch (err) {
+							console.log('[node-log] - log - warn: caller access restricted, usualy caused by strict mode or () => syntax');
+							// TypeError: 
+							// 'caller' and 'arguments' are restricted function properties and cannot be accessed in this context.
+							// cause by using () => syntax to define a function or strict mode...
+							break;
+						}
+						
 					}
 				}				
 				// caller is special adhoc allowing user to log extra function or tag
