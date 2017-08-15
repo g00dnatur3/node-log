@@ -84,60 +84,34 @@ function addFunctions(tag, callerFile) {
 	for (var i=0; i<funcs.length; i++) {
 		const func = funcs[i];
 		//console.log('func.name: ' + func.name + ', tag: ' + tag);
-		const val = {tag: tag, callerFile: callerFile};
 		if (!funcMap[func.name]) {
-			funcMap[func.name] = val;
+			funcMap[func.name] = [tag];
 		} else {
-			if (Object.getType(funcMap[func.name]) !== 'array') {
-				const _tmp = funcMap[func.name];
-				funcMap[func.name] = [_tmp];
-			}
-			funcMap[func.name].push(val);
-		}
-	}
-	
-	// if there is an array of tags, the func.name is not unique.
-	// rebuild the mapping to be [tag.funcName] --> [tag] 
-	for (var i=0; i<funcs.length; i++) {
-		const func = funcs[i];
-		if (Object.getType(funcMap[func.name]) === 'array') {
-			const vals = funcMap[func.name];
-			delete funcMap[func.name];
-			for (var j=0; j<vals.length; j++) {
-				const _tmp = vals[j];
-				funcMap[_tmp.tag + '.' + func.name] = _tmp;
-			}
+			funcMap[func.name].push(tag);
 		}
 	}
 }
 
 function getTag(funcName) {
-	// the way i am doing this is not the simple-est
-	// but its more of an optimization
-	// i dont have to call getCallerFile() if the func.name is unique.
-	if (!funcMap[funcName]) {
-		const callerFile = getCallerFile();		
-		if (funcMap[callerFile]) {
-			const _tag = funcMap[callerFile];
-			const key = funcMap[_tag + '.' + funcName]
-			return (funcMap[key]) ? funcMap[key].tag : null;
+	if (funcMap[funcName]) {
+		if (funcMap[funcName].length > 1) {
+			return funcMap[getCallerFile()];
+		} else {
+			return funcMap[funcName][0];
 		}
-		else return null;
-	} 
-	else return funcMap[funcName].tag;
+	}
+	return null;
 }
 
 function formalName(funcName, logTag) {
 	assert(funcName, 'funcName is null');
 	const tag = getTag(funcName);
 	if (!tag) return funcName;
-	
 	//console.log();
 	//console.log('funcName: ' + funcName);
 	//console.log('logTag: ' + logTag);
 	//console.log('tag: ' + tag);
 	//console.log();
-	
 	if (tag === funcName) return funcName;
 	if (tag === logTag) return funcName;
 	else {
