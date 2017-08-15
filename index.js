@@ -49,21 +49,7 @@ function getCallerFunctionName(_arguments) {
 		: getFunctionName(_arguments.callee.caller);
 }
 
-const funcMap = {
-	// MAPPING STRUCTURE:
-	//
-	// CALLER_FILE -> TAG
-	// '#' + TAG -> CALLER_FILE
-	// 
-	// IF FUNC_NAME IS UNIQUE THEN,
-	//     FUNC_NAME -> TAG
-	//
-	// IF FUNC_NAME IS NOT UNIQUE THEN,
-	//     TAG.FUNC_NAME -> TAG
-	// 
-	// This structure allows me to avoid calling getCallerFile
-	// when the func.name is unique (which more than not it is).
-};
+const funcMap = {};
 
 function addFunctions(tag, callerFile) {
 	var data = fs.readFileSync(callerFile, "utf8").trim();
