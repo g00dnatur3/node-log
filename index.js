@@ -141,9 +141,12 @@ module.exports = {
 									tag = funcMap[name][0];
 								}
 								else {
+									/*
 									if (funcMap[name].length > 1) {
 										tag = funcMap[name].join('|');
 									}
+									*/
+									tag = funcMap[_callerFile];
 								}
 							}
 							var fname;
