@@ -78,33 +78,6 @@ function addFunctions(tag, callerFile) {
 	}
 }
 
-function getTag(funcName) {
-	if (funcMap[funcName]) {
-		if (funcMap[funcName].length > 1) {
-			return funcMap[getCallerFile()];
-		} else {
-			return funcMap[funcName][0];
-		}
-	}
-	return null;
-}
-
-function formalName(funcName, logTag) {
-	assert(funcName, 'funcName is null');
-	const tag = getTag(funcName);
-	if (!tag) return funcName;
-	//console.log();
-	//console.log('funcName: ' + funcName);
-	//console.log('logTag: ' + logTag);
-	//console.log('tag: ' + tag);
-	//console.log();
-	if (tag === funcName) return funcName;
-	if (tag === logTag) return funcName;
-	else {
-		return tag + '.' + funcName;
-	}
-}
-
 function createLogTag(callerFile, customTag) {
 	if (customTag) {
 		if (customTag.startsWith('[')) customTag = customTag.slice(1);
@@ -124,14 +97,29 @@ function _log(tag, callChain, str) {
 	else console.log('[' + tag + '] - ' + str);
 }
 
+function getNext(_caller) {
+	assert(_caller, '_caller is null');
+	try {
+		if (_caller.caller) return _caller.caller;
+		else return null;
+	} catch (err) {
+		console.log('[node-log] - log - warn: caller access restricted, usualy caused by strict mode or () => syntax');
+		return null;
+	}
+}
+
 module.exports = {
 
 	log: function log(customTag) {
+		
+
 		const callerFile = getCallerFile();
 		assert(callerFile, "callerFile is null");
 		const logTag = createLogTag(callerFile, customTag);
+
 		assert(logTag, "logTag is null");
 		return function(str, caller) {
+			const _callerFile = getCallerFile();
 			try {
 				str = (str) ? str.trim() : '';
 				if (!caller && !arguments.callee.caller) {
@@ -142,27 +130,36 @@ module.exports = {
 				const callChain = [];
 				if (Object.getType(arguments.callee.caller) === 'function') {
 					var _caller = arguments.callee.caller;
+					var isTail = true;
 					while (_caller) {
+						const next = getNext(_caller);
 						name = getFunctionName(_caller);
 						if (name) {
-							const fname = formalName(name, logTag);
+							var tag;
+							if (funcMap[name] && !isTail) {
+								if (funcMap[name].length === 1) {
+									tag = funcMap[name][0];
+								}
+								else {
+									if (funcMap[name].length > 1) {
+										tag = funcMap[name].join('|');
+									}
+								}
+							}
+							var fname;
+							if (!tag) fname = name;
+							else {
+								if (logTag !== tag) fname = tag + '.' + name;
+								else fname = name;
+							}
 							if (callChain.length > 0) {
 								// avoid duplicate function names created with .bind()
-								if (callChain[0] !== name) callChain.unshift(fname); 
+								if (callChain[0] !== fname) callChain.unshift(fname); 
 							}
 							else callChain.unshift(fname);
 						}
-						
-						try {
-							_caller = _caller.caller;
-						} catch (err) {
-							console.log('[node-log] - log - warn: caller access restricted, usualy caused by strict mode or () => syntax');
-							// TypeError: 
-							// 'caller' and 'arguments' are restricted function properties and cannot be accessed in this context.
-							// cause by using () => syntax to define a function or strict mode...
-							break;
-						}
-						
+						_caller = next;
+						var isTail = false;
 					}
 				}				
 				// caller is special adhoc allowing user to log extra function or tag
