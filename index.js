@@ -58,8 +58,14 @@ function addFunctions(tag, callerFile) {
 		data = data.substring(data.indexOf("\n") + 1).trim();
 	}
 	
-	assert(!funcMap[callerFile], 'instantiating log twice in same file: ' + callerFile);
-	funcMap[callerFile] = tag; // keep a mapping of callerFile to the tag
+	// keep a mapping of callerFile to the tag
+	if (funcMap[callerFile]) {
+		console.log('[node-log] - addFunctions - warn: instantiating log twice in same file: ' + callerFile);
+		funcMap[callerFile].push(tag)
+	}
+	else {
+		funcMap[callerFile] = [tag];
+	}
 	
 	// use a hash because constructor functions have same name as file usually
 	assert(!funcMap['#' + tag], 'more than one file has same log tag: ' + tag + ', ' + callerFile);
@@ -69,12 +75,15 @@ function addFunctions(tag, callerFile) {
 	
 	for (var i=0; i<funcs.length; i++) {
 		const func = funcs[i];
-		//console.log('func.name: ' + func.name + ', tag: ' + tag);
-		if (!funcMap[func.name]) {
-			funcMap[func.name] = [tag];
-		} else {
-			funcMap[func.name].push(tag);
+		
+		var name = func.name;
+		if (name === 'constructor') name = '_constructor';
+		assert(Object.getType(name) === 'string');
+		
+		if (!funcMap[name]) {
+			funcMap[name] = [];
 		}
+		funcMap[name].push(tag);
 	}
 }
 
@@ -87,6 +96,7 @@ function createLogTag(callerFile, customTag) {
 	try {
 		addFunctions(tag, callerFile);
 	} catch (err) {
+		console.log('err: ' + err);
 		console.log('[node-log] - createLogTag - warn: failed to read functions from file: ' + callerFile);
 	}
 	return tag;
@@ -112,12 +122,11 @@ module.exports = {
 
 	log: function log(customTag) {
 		
-
 		const callerFile = getCallerFile();
 		assert(callerFile, "callerFile is null");
 		const logTag = createLogTag(callerFile, customTag);
-
 		assert(logTag, "logTag is null");
+		
 		return function(str, caller) {
 			const _callerFile = getCallerFile();
 			try {
@@ -132,6 +141,7 @@ module.exports = {
 					var _caller = arguments.callee.caller;
 					var isTail = true;
 					while (_caller) {
+						if (callChain.length === 2) break; //max-length=2
 						const next = getNext(_caller);
 						name = getFunctionName(_caller);
 						if (name) {
@@ -146,7 +156,7 @@ module.exports = {
 										tag = funcMap[name].join('|');
 									}
 									*/
-									tag = funcMap[_callerFile];
+									tag = funcMap[_callerFile].join('|');
 								}
 							}
 							var fname;
