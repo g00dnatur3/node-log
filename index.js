@@ -103,8 +103,10 @@ function createLogTag(callerFile, customTag) {
 }
 
 function _log(tag, callChain, str) {
-	if (callChain.length > 0) console.log('[' + tag + '] ' + callChain.join(' - ') + ' - ' + str);
-	else console.log('[' + tag + '] - ' + str);
+	const iso = new Date().toISOString();
+	const date = iso.substring(2, iso.length-1);
+	if (callChain.length > 0) console.log(date + ' [' + tag + '] ' + callChain.join(' - ') + ' - ' + str);
+	else console.log(date + ' [' + tag + '] - ' + str);
 }
 
 function getNext(_caller) {
