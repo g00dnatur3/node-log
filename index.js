@@ -60,7 +60,7 @@ function addFunctions(tag, callerFile) {
 	
 	// keep a mapping of callerFile to the tag
 	if (funcMap[callerFile]) {
-		console.log('[node-log] - addFunctions - warn: instantiating log twice in same file: ' + callerFile);
+		_logSelf('instantiating log twice in same file: ' + callerFile);
 		funcMap[callerFile].push(tag)
 	}
 	else {
@@ -77,12 +77,10 @@ function addFunctions(tag, callerFile) {
 		const func = funcs[i];
 		
 		var name = func.name;
-		if (name === 'constructor') name = '_constructor';
+		if (name === 'constructor') continue;
 		assert(Object.getType(name) === 'string');
 		
-		if (!funcMap[name]) {
-			funcMap[name] = [];
-		}
+		if (!funcMap[name]) funcMap[name] = [];
 		funcMap[name].push(tag);
 	}
 }
@@ -96,8 +94,8 @@ function createLogTag(callerFile, customTag) {
 	try {
 		addFunctions(tag, callerFile);
 	} catch (err) {
-		console.log('err: ' + err);
-		console.log('[node-log] - createLogTag - warn: failed to read functions from file: ' + callerFile);
+		_logSelf('err: ' + err);
+		_logSelf('failed to read functions from file: ' + callerFile);
 	}
 	return tag;
 }
@@ -115,9 +113,15 @@ function getNext(_caller) {
 		if (_caller.caller) return _caller.caller;
 		else return null;
 	} catch (err) {
-		console.log('[node-log] - log - warn: caller access restricted, usualy caused by strict mode or () => syntax');
+		_logSelf('warn: caller access restricted, usualy caused by strict mode or () => syntax');
 		return null;
 	}
+}
+
+function _logSelf(str) {
+	const caller = getCallerFunctionName(arguments);
+	const callChain = Object.getType(caller) === 'string' ? [caller] : [];
+	_log('node-log', callChain, str);
 }
 
 module.exports = {
@@ -134,7 +138,9 @@ module.exports = {
 			try {
 				str = (str) ? str.trim() : '';
 				if (!caller && !arguments.callee.caller) {
-					console.log(logTag + ' - ' + str);
+					//console.log(logTag + ' - ' + str);
+					
+					_log(logTag, [], str);
 					return;
 				}
 				var name;
@@ -195,6 +201,7 @@ module.exports = {
 				_log(logTag, callChain, str);
 			}
 			catch (err) {
+				_logSelf('err: ');
 				console.log(err.stack);
 			}
 		}
