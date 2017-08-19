@@ -124,6 +124,19 @@ function _logSelf(str) {
 	_log('node-log', callChain, str);
 }
 
+function toString(o) {
+    const type = Object.getType(o);
+    if (type === 'string') return o.trim();
+    if (type === 'object') {
+		try {
+			return JSON.stringify(o);
+		} catch (err) {
+			return o.toString();
+		}
+	}
+	return '';
+}
+
 module.exports = {
 
 	log: function log(customTag) {
@@ -136,7 +149,7 @@ module.exports = {
 		return function(str, caller) {
 			const _callerFile = getCallerFile();
 			try {
-				str = (str) ? str.trim() : '';
+				str = toString(str);
 				if (!caller && !arguments.callee.caller) {
 					//console.log(logTag + ' - ' + str);
 					
