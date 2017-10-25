@@ -8,6 +8,7 @@ logs two extra things:
 1) A log tag (I usually make my log tag be '[filename]'
 2) Calling function - name of function that is calling the code where the log is happening
 
+If you omit the log tag, it will use the filename instead, pretty great!
 
 # install
 ```
@@ -49,6 +50,9 @@ The following code:
 ```
 // the filename this code is contained in is: Gpio.js
 const log = require('node-log').log('[Gpio]');
+
+// if you omit the log tag, it will use the filename
+// const log = require('node-log').log()
 
 function hello() {
   log('got here');
