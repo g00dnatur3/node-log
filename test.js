@@ -1,5 +1,5 @@
 // since filename = test.js, logTag = test
-const log = require('./').log('[test]');
+const log = require('./').log();
 
 function hello() {
   log('got here');

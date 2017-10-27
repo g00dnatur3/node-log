@@ -49,6 +49,15 @@ function getCallerFunctionName(_arguments) {
 		: getFunctionName(_arguments.callee.caller);
 }
 
+function notErr(log, err, callerFunc) {
+	if (err) {
+		if (callerFunc) log('err: ' + err, callerFunc);
+		else log('err: ' + err, getCallerFunctionName(arguments));
+		return false;
+	}
+	return true;
+}
+
 const funcMap = {};
 
 function addFunctions(tag, callerFile) {
@@ -222,6 +231,10 @@ module.exports = {
 
 	getCallerFunctionName: getCallerFunctionName,
 	
-	getFunctionName: getFunctionName
+	getFunctionName: getFunctionName,
+	
+	notErr: function(log) {
+		return notErr.bind(null, log);
+	}
 
 }
