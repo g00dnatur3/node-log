@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "a log function",
   "dependencies": {
-    "log4js": "^3.0.5",
+    "log4js": "^6.4.0",
     "cli-color": "^1.4.0"
   },
   "main": "src/log.js",
